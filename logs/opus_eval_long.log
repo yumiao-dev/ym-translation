@@ -1,0 +1,85 @@
+nohup: ignoring input
+[opus] device=cuda
+/usr/local/lib/python3.12/dist-packages/transformers/models/marian/tokenization_marian.py:176: UserWarning: Recommended: pip install sacremoses.
+  warnings.warn("Recommended: pip install sacremoses.")
+Loading weights:   0%|          | 0/254 [00:00<?, ?it/s]Loading weights:  22%|██▏       | 55/254 [00:00<00:00, 548.76it/s]Loading weights:  43%|████▎     | 110/254 [00:00<00:00, 443.72it/s]Loading weights:  61%|██████▏   | 156/254 [00:00<00:00, 431.70it/s]Loading weights:  79%|███████▊  | 200/254 [00:00<00:00, 408.95it/s]Loading weights:  95%|█████████▌| 242/254 [00:00<00:00, 411.82it/s]Loading weights: 100%|██████████| 254/254 [00:00<00:00, 430.13it/s]
+[opus] params=77.9M
+=== OPUS LONG-TEXT EVAL: 13 cases ===
+[transformers] Both `max_new_tokens` (=400) and `max_length`(=512) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+
+----[01] 长句-新闻 | 源文 68 字----
+ZH  : 国家统计局今日发布数据显示，上半年国内生产总值同比增长百分之五点三，其中第三产业增加值增速高于整体水平，消费对经济增长的贡献率超过六成。
+OPUS: Data released today by the National Statistical Office show that GDP grew by 5.3 per cent the same year in the first half of the year, with the tertiary sector growing at a higher rate than the overall level and consumption contributing more than 60 per cent to economic growth.
+T   : 3.30s | out_chars=278
+[transformers] Both `max_new_tokens` (=400) and `max_length`(=512) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+
+----[02] 长句-技术 | 源文 76 字----
+ZH  : 该模型采用分组查询注意力机制，在保持多头注意力表达能力的同时显著降低了键值缓存的显存占用，使其能够在消费级显卡上支持长达四千零九十六个令牌的上下文窗口。
+OPUS: The model uses a grouping focus mechanism that, while maintaining multi-directional expression capacity, significantly reduces the visible occupancy of key caches, enabling it to support contextual windows of up to 400096 medals on consumer-level cards.
+T   : 0.27s | out_chars=253
+[transformers] Both `max_new_tokens` (=400) and `max_length`(=512) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+
+----[03] 长句-日常 | 源文 62 字----
+ZH  : 昨天下午我在公司附近的咖啡馆碰到了一个多年未见的老同学，我们聊了很久，从各自的工作聊到家庭，最后还约好下个月一起去看场电影。
+OPUS: Yesterday afternoon, I met an old friend at a café near the company, who had been missing for many years. We talked for a long time, from our work to our family, and finally we went to a movie next month.
+T   : 0.26s | out_chars=204
+[transformers] Both `max_new_tokens` (=400) and `max_length`(=512) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+
+----[04] 长句-商务 | 源文 66 字----
+ZH  : 关于贵司提出的交货周期调整方案，我方经内部评估认为，若能提前两周完成首批交付，我们可以接受相应价格上浮，但需要贵方提供质量保证条款。
+OPUS: With regard to your proposed adjustment of the delivery cycle, it is our internal assessment that, if the first deliveries are completed two weeks in advance, we can accept the corresponding price escalation, but you will have to provide quality assurance clauses.
+T   : 0.24s | out_chars=264
+[transformers] Both `max_new_tokens` (=400) and `max_length`(=512) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+
+----[05] 长句-描述 | 源文 65 字----
+ZH  : 秋天的傍晚，阳光斜斜地洒在街道两旁的梧桐树上，金黄的落叶随着微风缓缓飘落，铺满了人行道，偶尔有骑车的人从上面碾过，发出沙沙的声响。
+OPUS: During the autumn evening, the sun slanted on the trees on both sides of the street, and the leaves of gold and yellow fell with the breeze, full of pavements, and occasionally cyclists ran over them and made a sound of sand.
+T   : 0.28s | out_chars=225
+[transformers] Both `max_new_tokens` (=400) and `max_length`(=512) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+
+----[06] 段落-记叙 | 源文 153 字----
+ZH  : 小李是一名刚毕业的程序员，入职一家互联网公司已经三个月了。刚开始的时候，他常常因为不熟悉代码库而加班到很晚，但他从不抱怨，而是利用周末时间阅读项目文档，向同事请教。三个月后的今天，他已经能够独立负责一个模块，并且在团队周会上提出了不错的优化建议。他的主管说，态度比能力更重要，小李正是那种能把事情做好的人。
+OPUS: Li, a recently graduated programmer, has been in an Internet company for three months. At the beginning, he usually worked late because he was not familiar with the code library, but he never complained, but used weekend time to read project files and ask his colleagues for advice. Three months later, he was able to take charge of a module and make good recommendations at the team week. His supervisor said that attitude was more important than ability, and Li was the kind of person who could do good.
+T   : 0.52s | out_chars=505
+[transformers] Both `max_new_tokens` (=400) and `max_length`(=512) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+
+----[07] 段落-说明 | 源文 149 字----
+ZH  : 机器学习模型的训练过程通常分为几个阶段。首先需要收集并清洗数据，去除噪声和重复样本；然后进行特征工程，把原始数据转换成模型可以理解的形式；接着选择合适的模型结构，并在训练集上反复迭代优化参数；最后在测试集上评估效果，如果指标不达标，还需要回头调整数据或结构。整个过程往往需要多次循环，很难一次成功。
+OPUS: The training process for machine learning models is usually divided into several stages. First, data are collected and cleaned to remove noise and duplicate samples; then feature engineering is carried out to convert the raw data into an understandable form of the model; then the appropriate model structure is selected and the parameters are optimized over and over again on the training set; and finally, the results are evaluated in the test set, and if indicators fail, the data or structure needs to be readjusted. The process often requires multiple cycles, and it is difficult to succeed once.
+T   : 0.56s | out_chars=601
+[transformers] Both `max_new_tokens` (=400) and `max_length`(=512) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+
+----[08] 段落-议论 | 源文 133 字----
+ZH  : 有人认为，人工智能的发展会大量取代人类的工作岗位，从而引发严重的社会问题。但另一些观点指出，历史上每一次技术革命虽然淘汰了旧职业，同时也创造了新的就业机会。关键在于社会能否及时提供相应的教育和培训，帮助劳动者完成技能转型。因此，与其担心被取代，不如思考如何适应变化。
+OPUS: Some argue that the development of artificial intelligence can significantly replace human jobs, thereby creating serious social problems. But others point out that every technological revolution in history, while phasing out old jobs, has created new jobs.
+T   : 0.22s | out_chars=257
+[transformers] Both `max_new_tokens` (=400) and `max_length`(=512) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+
+----[09] 段落-对话 | 源文 115 字----
+ZH  : 「你昨天怎么没来开会？」小王问道。「不好意思，我临时有个急事要处理。」小张解释道，「不过我已经把材料发到群里了，你看到了吗？」「看到了，但是有几个地方不太明白，等会儿能跟你确认一下吗？」「当然可以，午休的时候我们找个会议室聊吧。」
+OPUS: "Why didn't you come to the meeting yesterday?" He asked him, "I'm sorry, I have an urgent matter to attend to." He explained, "But I've sent the material to the group, see?" "See, but there are a few things that I don't understand. Can I confirm with you later?" "Surely, we can talk in a conference room during the afternoon break."
+T   : 0.45s | out_chars=334
+[transformers] Both `max_new_tokens` (=400) and `max_length`(=512) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+
+----[10] 一致性-代词 | 源文 67 字----
+ZH  : 张教授把他的研究笔记交给了他的学生，因为他说他自己已经用不上了，希望这些笔记能帮助她少走一些弯路。他的学生接过笔记，感动得说不出话来。
+OPUS: Professor Zhang gave his research notes to his students because he said he could no longer use them, hoping that they would help her to take less turns. His students took the notes, and they couldn't speak.
+T   : 0.24s | out_chars=206
+[transformers] Both `max_new_tokens` (=400) and `max_length`(=512) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+
+----[11] 一致性-时态 | 源文 61 字----
+ZH  : 我去年在杭州工作，那时候每天骑自行车上班。现在我搬到了上海，改坐地铁了。明年我打算去北京，到时候估计得习惯更长的通勤时间。
+OPUS: I worked in Hangzhou last year, when I rode a bike to work every day. Now I moved to Shanghai and took the subway. Next year I'm going to Beijing, and I'll get used to longer commutes.
+T   : 0.26s | out_chars=184
+[transformers] Both `max_new_tokens` (=400) and `max_length`(=512) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+
+----[12] 一致性-术语 | 源文 84 字----
+ZH  : 本次实验采用了 Transformer 架构，使用 AdamW 优化器，学习率设置为三乘以十的负四次方，批次大小为三十二。训练结束后，我们在验证集上测试了模型的困惑度。
+OPUS: The experiment uses a Transformer architecture using AdamW optimisers, learning rates set at three times ten negative fours and batch size at thirty-two. After the training, we tested the confusion of the model on the validation set.
+T   : 0.28s | out_chars=233
+[transformers] Both `max_new_tokens` (=400) and `max_length`(=512) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+
+----[13] 短文-综合 | 源文 342 字----
+ZH  : 清晨六点，闹钟准时响起。我挣扎着从床上爬起来，拉开窗帘，外面的天空还是一片灰蒙蒙的。洗漱完毕后，我给自己冲了一杯咖啡，坐在书桌前开始处理昨天没做完的工作。电脑屏幕的蓝光映在脸上，键盘敲击声在安静的房间里格外清晰。大约过了两个小时，阳光终于透过云层照了进来，屋子里一下子亮堂了许多。我伸了个懒腰，决定出门走走。小区门口的早餐店已经开始忙碌，老板娘热情地招呼着每一位客人。我点了一碗豆浆和两个包子，坐在角落里慢慢吃着，看着来来往往的行人。有人行色匆匆，有人悠闲散步，每个人的脸上都写着不同的故事。吃完早餐，我沿着河边的小路走了一圈，微风拂过水面，泛起层层涟漪，几只野鸭悠闲地游过。这一刻，我感到前所未有的平静。回到家后，我重新坐到电脑前，思路竟然变得清晰起来，之前卡了很久的问题迎刃而解。
+OPUS: At about six a.m., the alarm clock was ringing on time. I climbed up from my bed, pulled the curtains open, and the sky was covered in gray. After cleaning, I made myself a cup of coffee and sat at the desk to deal with the work that had not been done yesterday. The blue light of the computer screen was on the face, the keyboard hit was clear outside the quiet room. After about two hours, the sun finally came in through the clouds, and everyone had a different story on their faces. After breakfast, I went out of the water, the breeze went up and down the water and a few wild ducks came up. I ordered a bowl of beans and two buns and sat in the corner, and I looked at the usual walkers. I was calm and I came back to my house, and it was clear that I had to go to the computer before I left.
+T   : 0.96s | q��j��?�M�y�hy�h

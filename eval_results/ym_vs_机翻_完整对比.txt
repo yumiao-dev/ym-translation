@@ -1,0 +1,715 @@
+================================================================================
+        ym-Translation  vs  OPUS-MT 机翻基线 · 完整对比报告
+        （短句 47 例 + 长文本 13 例 + 英译中方向）
+================================================================================
+生成时间：2026-10-05
+模型版本：Stage 2（step 8010 / 4.200B tokens）
+================================================================================
+
+【目录】
+  第零章  对比设置与免责声明
+  第一章  短句对比（中译英，47 句，7 类）
+  第二章  长文本对比（中译英，13 例，5 类）
+  第三章  英译中方向（47 句，参考性）
+  第四章  汇总计分
+  第五章  结论与下一步
+
+
+================================================================================
+第零章  对比设置与免责声明
+================================================================================
+
+【对比双方】
+
+  ┌──────────────┬────────────────────────────┬────────────────────────────┐
+  │ 项目          │ ym-Translation（我们的）     │ OPUS-MT（机翻基线）          │
+  ├──────────────┼────────────────────────────┼────────────────────────────┤
+  │ 模型          │ 自研 Decoder-only           │ Helsinki-NLP opus-mt-zh-en  │
+  │              │                            │ （Marian NMT）              │
+  │ 参数量        │ 54.4M                      │ 77.9M（本地权重实测）        │
+  │              │ （名义 0.1B）               │ 官方标称 ~74M               │
+  │ 架构          │ 10L / 512H / 8Q2KV / RoPE   │ 6+6L Encoder-Decoder / 512H │
+  │ 语言方向      │ 通用双向（需 <|zh|>/<|en|>） │ 单向专用（zh→en）           │
+  │ 解码方式      │ 贪心（argmax）              │ Beam search (num_beams=4)   │
+  │              │                            │ + no_repeat_ngram_size=3    │
+  │ 训练数据      │ 4.2B tokens 网页平行语料     │ OPUS 全量（含大量人工译文）   │
+  │ 运行环境      │ DSW-AMD (MI300A) GPU       │ DSW-AMD (MI300A) GPU        │
+  └──────────────┴────────────────────────────┴────────────────────────────┘
+
+【免责声明】
+
+  两者并非严格可比。OPUS-MT 是「专用单向模型 + Beam search + 更干净数据」，
+  而我们是「通用双向模型 + 贪心解码 + 数据量更小」。
+
+  这个对比展示的是【差距在哪、差距多大】，不是"同等条件下的优劣"。
+
+
+================================================================================
+第一章  短句对比（中译英，47 句）
+================================================================================
+
+评测集：47 句日常口语，分 7 类，专门针对语气词 / 体标记 / 应答语 / 感叹词 /
+        话语标记 / 委婉敬语，另设对照组检验基础能力。
+
+标记说明：
+    [YM胜]   = 我们更好
+    [机翻胜] = OPUS-MT 更好
+    [平手]   = 双方都对
+    [都错]   = 双方都错
+
+
+--------------------------------------------------------------------------------
+A 类 · 句末语气词（6 句）
+--------------------------------------------------------------------------------
+ #  源句                         ym-Translation                OPUS-MT                  判定
+------------------------------------------------------------------------------------------
+02  你去哪儿呢？                  where are you going ?         Where are you going?     [平手]
+03  我们走吧。                    let 's go .                   Let's go.                [平手]
+04  这很简单嘛。                  that 's easy .                It's easy.               [平手]
+05  不想去就别去呗。              don 't go and talk about it . Don't go if you don't…  [机翻胜]
+06  好漂亮啊！                    good !                        It's beautiful!          [机翻胜]
+07  你快点呀！                    you 're all right !           Hurry up!                [机翻胜]
+
+  小计：ym 0 胜 / 机翻 3 胜 / 平 3 / 都错 0
+
+  点评：ym 能识别"呢/吧/嘛"的存在（输出可读），但"呗/啊/呀"这三句语义完全跑偏。
+       OPUS 三句全对。
+
+
+--------------------------------------------------------------------------------
+B 类 · 体标记 / 时态（5 句）
+--------------------------------------------------------------------------------
+ #  源句                         ym-Translation                OPUS-MT                  判定
+------------------------------------------------------------------------------------------
+08  我吃了。                      I eat .                       I ate it.                [机翻胜]
+09  他去过北京。                  he went to Beijing .          He's been to Beijing.    [机翻胜]
+10  他在吃饭呢。                  he is eating .                He's eating.             [平手]
+11  我明天就去。                  I 'll go tomorrow .           I'll be there tomorrow.  [平手]
+12  还好我带了伞。                I 'm fine with my umbrella .  Good thing I brought…    [机翻胜]
+
+  小计：ym 0 胜 / 机翻 3 胜 / 平 2 / 都错 0
+
+  点评：ym 时态基本能对上（eating / I'll go），但"吃过了→I eat"漏掉完成体，
+       "去过→went"应是"have been to"，这两处是硬伤。
+
+
+--------------------------------------------------------------------------------
+C 类 · 口语应答语 ★重灾区★（12 句）
+--------------------------------------------------------------------------------
+ #  源句                         ym-Translation                OPUS-MT                  判定
+------------------------------------------------------------------------------------------
+13  好的。                        good .                        Okay.                    [机翻胜]
+14  我知道了。                    I know .                      I know.                  [都错]
+15  我知道了，你不用说了。        I know , you don 't have to . I know, you don't have… [都错]
+16  收到。                        yes .                         Copy that.               [机翻胜]
+17  嗯嗯。                        uh , uh , uh …（崩）          Mm-hmm.                  [机翻胜]
+18  嗯？                          uh , uh , uh …（崩）          Huh?                     [机翻胜]
+19  嗯哼。                        well , I 'm sorry .           Mm-hmm.                  [机翻胜]
+20  算了吧。                      tell me about it .            Forget it.               [机翻胜]
+21  随你便。                      follow your time .            Suit yourself.           [机翻胜]
+22  看着办吧。                    look at the business .        Let's do it.             [机翻胜]
+23  辛苦了。                      hard work .                   Thank you very much.     [机翻胜]
+24  哪里哪里。                    where .                       Where? Where?            [都错]
+
+  小计：ym 0 胜 / 机翻 10 胜 / 平 0 / 都错 2
+
+  点评：这是最大短板。12 句里我们只"不崩"了 5 句，且 5 句语义都不对。
+       两句 ym 完全循环失控（"嗯嗯""嗯？"输出 uh,uh,uh…）。
+       但注意第 14/15/24 句——【OPUS 也错】：
+         · 我知道了 → 应为 I see（双方都写 I know）
+         · 哪里哪里 → 应为 You flatter me（ym 写 where，OPUS 写 Where? Where?，
+           反而 OPUS 更啰嗦）
+
+
+--------------------------------------------------------------------------------
+D 类 · 感叹词（5 句）
+--------------------------------------------------------------------------------
+ #  源句                         ym-Translation                OPUS-MT                  判定
+------------------------------------------------------------------------------------------
+25  哎呀，我忘了带钥匙。          Oh , I forgot to bring the key.  Gee, I forgot my keys.  [平手]
+26  哎哟，好疼！                  oh , good !                   Ouch, that hurts!        [机翻胜]
+27  哇，太棒了！                  wow ! that 's great !         Wow, that's great!       [平手]
+28  唉，随便吧。                  oh , come on .                Well, whatever.          [平手]
+29  哼，我才不信呢。              oh , I don 't believe it .    Well, I don't believe it.[平手]
+
+  小计：ym 0 胜 / 机翻 1 胜 / 平 4 / 都错 0
+
+  点评：接近打平（4 平）。第 25 句其实我们更贴原文的"哎呀"（OPUS 用了英式 Gee）。
+       唯一硬伤是第 26 句"哎哟，好疼"→输出 oh, good（把"疼"理解成"好"）。
+
+
+--------------------------------------------------------------------------------
+E 类 · 话语标记（10 句）
+--------------------------------------------------------------------------------
+ #  源句                         ym-Translation                OPUS-MT                  判定
+------------------------------------------------------------------------------------------
+30  说真的，我不太想去。          seriously , I don 't think…   Seriously, I don't…      [机翻胜]
+31  那个……我是什么意思呢？        what do I mean ?              So... what do I mean?    [机翻胜]
+32  反正我不管了。                anyway , I 'm not .           I don't care anyway.     [机翻胜]
+33  说白了就是钱的问题。          it 's a question of money .   It's about money.        [平手]
+34  不是我说你，你这样不行。      not I , you can 't .          I'm not saying you can…  [机翻胜]
+35  真是的，又迟到了。            it 's too late .              Really, it's late again. [机翻胜]
+36  别这样嘛，好不好？            don 't you , okay ?            Come on, okay?           [机翻胜]
+37  差不多得了。                  almost .                      Almost got it.           [都错]
+38  无所谓啦。                    no .                          Doesn't matter.          [机翻胜]
+39  劳驾，借过一下。              please lend me some money .   Excuse me.               [机翻胜]
+
+  小计：ym 0 胜 / 机翻 8 胜 / 平 1 / 都错 1
+
+  点评：第 39 句最典型——"借过一下"被理解成"借钱"（lend me some money），
+       这是把"借"当成了实义动词。
+       第 37 句"差不多得了"→应为 That's enough，OPUS 也错（Almost got it）。
+
+
+--------------------------------------------------------------------------------
+F 类 · 委婉敬语（6 句）
+--------------------------------------------------------------------------------
+ #  源句                         ym-Translation                OPUS-MT                  判定
+------------------------------------------------------------------------------------------
+40  要不……你还是别去了？          no , no , no …（崩）          Why don't you just stop? [机翻胜]
+41  恕我直言，这不太合适。        I 'm not going to say…        With all due respect,…   [机翻胜]
+42  我可不可以这么理解？          can I understand that ?       Can I understand that?   [平手]
+43  麻烦你帮我个忙。              trouble you help me .         Do me a favor, please.   [机翻胜]
+44  那就打扰了。                  that 's bothering you .       That bothers you.        [都错]
+
+  小计：ym 0 胜 / 机翻 4 胜 / 平 1 / 都错 1
+
+  点评：第 41 句"恕我直言"→ OPUS 的 With all due respect 是标准译法，
+       我们完全没译出来。第 40 句我们再次循环失控。
+
+
+--------------------------------------------------------------------------------
+G 类 · 对照组（3 句，检验基础能力）
+--------------------------------------------------------------------------------
+ #  源句                         ym-Translation                OPUS-MT                  判定
+------------------------------------------------------------------------------------------
+45  他昨天去了北京。              he went to Beijing yesterday . He went to Beijing…    [平手]
+46  我正在学习机器翻译。          I 'm learning machine translation. I'm studying machine… [平手]
+47  请把这本书给我。              please give me this book .    Please give me this book.[平手]
+
+  小计：平 3 ——【对照组完全打平】
+
+  点评：这是最重要的信号。普通日常句子我们已追平机翻。
+
+
+================================================================================
+第二章  长文本对比（中译英，13 例）
+================================================================================
+
+评测集：13 例，分 5 类，覆盖长句（40-80 字）、段落（115-153 字）、
+        长程一致性（代词 / 时态 / 术语）、超长综合短文（342 字）。
+
+单句耗时对比（同为 DSW-AMD GPU）：
+    ym-Translation : 2.51 – 3.74 秒 / 例
+    OPUS-MT (beam=4): 0.22 – 3.30 秒 / 例
+
+
+--------------------------------------------------------------------------------
+长句类（5 例，40-80 字）
+--------------------------------------------------------------------------------
+
+----[01] 长句-新闻（68 字）----
+  中文：国家统计局今日发布数据显示，上半年国内生产总值同比增长百分之五点三，
+        其中第三产业增加值增速高于整体水平，消费对经济增长的贡献率超过六成。
+
+  ym  ：the National Statistical Office today reported a 5.3 per cent increase in GDP
+        relative to the previous half , with the third industry increasing its value of
+        output , which is more than sixfold , with consumption contributing to economic
+        growth .
+
+  机翻：Data released today by the National Statistical Office show that GDP grew by
+        5.3 per cent the same year in the first half of the year, with the tertiary sector
+        growing at a higher rate than the overall level and consumption contributing more
+        than 60 per cent to economic growth.
+
+  判定：【机翻胜】
+  差异：ym 把"超过六成"错挂到"第三产业增加值"上（which is more than sixfold），
+        且漏译"高于整体水平"。机翻整体正确，仅"同比增长"多译了 the same year。
+
+
+----[02] 长句-技术（76 字）----
+  中文：该模型采用分组查询注意力机制，在保持多头注意力表达能力的同时显著降低了
+        键值缓存的显存占用，使其能够在消费级显卡上支持长达四千零九十六个令牌的
+        上下文窗口。
+
+  ym  ：the model uses a group query focusing mechanism to reduce the explicit memory of
+        the keystroke , and to reduce the explicit memory of the keystroke , which allows
+        the consumer @-@ level display to support a four @-@ thousand @-@ ninety @-@ nine
+        @-@ ninety @-@ six @-@ block box .
+
+  机翻：The model uses a grouping focus mechanism that, while maintaining multi-directional
+        expression capacity, significantly reduces the visible occupancy of key caches,
+        enabling it to support contextual windows of up to 400096 medals on consumer-level
+        cards.
+
+  判定：【机翻胜（但自身也错）】
+  差异：这题双方都栽。
+        ym 把"键值缓存"→keystroke（键盘击键），"显存占用"→explicit memory，
+        数字 4096 被愚蠢地逐字译成 four-thousand-ninety-six 且还写错。
+        机翻把"令牌"→medals（奖牌），数字 4096→400096（多打了两位），同样离谱。
+        ——这一句可视为两次失败。
+
+
+----[03] 长句-日常（62 字）----
+  中文：昨天下午我在公司附近的咖啡馆碰到了一个多年未见的老同学，我们聊了很久，
+        从各自的工作聊到家庭，最后还约好下个月一起去看场电影。
+
+  ym  ：I met a long time ago at the coffee shop near the company , and we talked about
+        it , from their work to the family , and finally we went to the movies next month .
+
+  机翻：Yesterday afternoon, I met an old friend at a café near the company, who had been
+        missing for many years. We talked for a long time, from our work to our family, and
+        finally we went to a movie next month.
+
+  判定：【机翻胜】
+  差异：ym 丢了"昨天下午"，"老同学→a long time ago"（时间当人），
+        "聊了很久→talked about it"（量→质）。
+        机翻"多年未见"→had been missing for many years（理解成"失踪"），也错但也偏。
+
+
+----[04] 长句-商务（66 字）----
+  中文：关于贵司提出的交货周期调整方案，我方经内部评估认为，若能提前两周完成首批
+        交付，我们可以接受相应价格上浮，但需要贵方提供质量保证条款。
+
+  ym  ：with regard to the delivery cycle adjustment programme proposed by your Division ,
+        we have found that if you can finish the first two weeks ahead of schedule , we can
+        accept the corresponding price , but require the quality assurance clause .
+
+  机翻：With regard to your proposed adjustment of the delivery cycle, it is our internal
+        assessment that, if the first deliveries are completed two weeks in advance, we can
+        accept the corresponding price escalation, but you will have to provide quality
+        assurance clauses.
+
+  判定：【机翻胜（差距小）】
+  差异：ym 漏"内部评估"（写成 we have found），"价格上浮"只写 price 少了 escalation，
+        "首批交付"→the first two weeks（时间单位错）。
+        机翻几乎完美。这是 ym 表现最好的一句，句式流畅、术语基本到位。
+
+
+----[05] 长句-描述（65 字）----
+  中文：秋天的傍晚，阳光斜斜地洒在街道两旁的梧桐树上，金黄的落叶随着微风缓缓飘落，
+        铺满了人行道，偶尔有骑车的人从上面碾过，发出沙沙的声响。
+
+  ym  ：autumn evening , the sun shone on the trees of the two sides of the street , and
+        the golden leaves of the golden leaves slowly , and the streets were covered with
+        the gentle breeze , and the streets were sometimes driven by the carriages .
+
+  机翻：During the autumn evening, the sun slanted on the trees on both sides of the street,
+        and the leaves of gold and yellow fell with the breeze, full of pavements, and
+        occasionally cyclists ran over them and made a sound of sand.
+
+  判定：【机翻胜】
+  差异：ym 出现"golden leaves of the golden leaves"重复，主谓错乱
+        （"the streets were covered with the gentle breeze"把微风当覆盖物），
+        且完全丢掉"沙沙的声响"。机翻结构完整，仅"铺满人行道→full of pavements"
+        （应是 covered the pavement）和"沙沙声→sound of sand"（应是 rustling）两处偏。
+
+
+--------------------------------------------------------------------------------
+段落类（4 例，115-153 字）
+--------------------------------------------------------------------------------
+
+----[06] 段落-记叙（153 字）----
+  中文：小李是一名刚毕业的程序员，入职一家互联网公司已经三个月了。刚开始的时候，
+        他常常因为不熟悉代码库而加班到很晚，但他从不抱怨，而是利用周末时间阅读
+        项目文档，向同事请教。三个月后的今天，他已经能够独立负责一个模块，并且在
+        团队周会上提出了不错的优化建议。他的主管说，态度比能力更重要，小李正是
+        那种能把事情做好的人。
+
+  ym  ：he was a newly @-@ enlarged engineer who was a new engineer . he was a new
+        engineer . he was a new engineer . ……（此后 ×68 次无限重复，共 1600 字符）
+
+  机翻：Li, a recently graduated programmer, has been in an Internet company for three
+        months. At the beginning, he usually worked late because he was not familiar with
+        the code library, but he never complained, but used weekend time to read project
+        files and ask his colleagues for advice. Three months later, he was able to take
+        charge of a module and make good recommendations at the team week. His supervisor
+        said that attitude was more important than ability, and Li was the kind of person
+        who could do good.
+
+  判定：【机翻胜（ym 严重崩溃）】
+  差异：★这是 ym 最严重的失败。模型进入死循环，
+        把 "he was a new engineer" 重复了 68 次直到撞到 max_new 上限。
+        机翻整体完整，仅"周会"→team week（漏译）、"能把事情做好"→do good（略偏）。
+
+
+----[07] 段落-说明（149 字）----
+  中文：机器学习模型的训练过程通常分为几个阶段。首先需要收集并清洗数据，去除噪声
+        和重复样本；然后进行特征工程，把原始数据转换成模型可以理解的形式；接着
+        选择合适的模型结构，并在训练集上反复迭代优化参数；最后在测试集上评估效果，
+        如果指标不达标，还需要回头调整数据或结构。整个过程往往需要多次循环，很难
+        一次成功。
+
+  ym  ：the machine learning model is usually divided into several stages . first , the
+        data must be collected and cleaned , and the noise and duplicate samples are
+        removed ; then the feature engineering is then converted to the model can be
+        understood by using the feature engineering . then the appropriate model structure
+        is then converted to the model and the data can be adjusted repeatedly in the
+        training set . finally , the test is evaluated , and the data or structure is needed
+        to adjust the data or structure . the whole process often requires a repetition of
+        multiple cycles .
+
+  机翻：The training process for machine learning models is usually divided into several
+        stages. First, data are collected and cleaned to remove noise and duplicate samples;
+        then feature engineering is carried out to convert the raw data into an
+        understandable form of the model; then the appropriate model structure is selected
+        and the parameters are optimized over and over again on the training set; and
+        finally, the results are evaluated in the test set, and if indicators fail, the
+        data or structure needs to be readjusted. The process often requires multiple
+        cycles, and it is difficult to succeed once.
+
+  判定：【机翻胜】
+  差异：ym 主语错（"机器学习模型的训练过程"→the machine learning model），
+        且句式混乱（"is then converted… is then converted"）。
+        但 ym 抓到了全部关键术语（feature engineering / training set / duplicate
+        samples），信息量其实不差，是"语序崩了"而非"没读懂"。
+        机翻这一句几乎完美。
+
+
+----[08] 段落-议论（133 字）----
+  中文：有人认为，人工智能的发展会大量取代人类的工作岗位，从而引发严重的社会问题。
+        但另一些观点指出，历史上每一次技术革命虽然淘汰了旧职业，同时也创造了新的
+        就业机会。关键在于社会能否及时提供相应的教育和培训，帮助劳动者完成技能转型。
+        因此，与其担心被取代，不如思考如何适应变化。
+
+  ym  ：The view was expressed that the development of artificial intelligence would be a
+        hugely different from the work of human beings, leading to serious social problems.
+        But other points were that history of technological revolution, while eliminated in
+        the past, created new jobs.
+
+  机翻：Some argue that the development of artificial intelligence can significantly replace
+        human jobs, thereby creating serious social problems. But others point out that
+        every technological revolution in history, while phasing out old jobs, has created
+        new jobs.
+
+  判定：【都错（都截断）】
+  差异：★双方都只翻了前两句就停。后两句（"关键在于社会能否…"、"因此，与其担心…"）
+        双方都漏译。这不是长度限制，是模型生成到中途就终止。
+        ym 还有语病（would be a hugely different from the work of human beings）。
+        机翻的"取代→replace human jobs"是双方里唯一翻对的地方。
+
+
+----[09] 段落-对话（115 字）----
+  中文：「你昨天怎么没来开会？」小王问道。「不好意思，我临时有个急事要处理。」
+        小张解释道，「不过我已经把材料发到群里了，你看到了吗？」「看到了，但是有几个
+        地方不太明白，等会儿能跟你确认一下吗？」「当然可以，午休的时候我们找个会议室
+        聊吧。」
+
+  ym  ：" how did you come to the meeting yesterday ? " asked the little king . " sorry ,
+        I have a short time to deal with it . " " I have a short time to deal with it , " the
+        little king said . " but I have not seen it yet , but I can 't see it later . "
+        " I can , of course , find a conference room for you when we 're off .
+
+  机翻："Why didn't you come to the meeting yesterday?" He asked him, "I'm sorry, I have an
+        urgent matter to attend to." He explained, "But I've sent the material to the group,
+        see?" "See, but there are a few things that I don't understand. Can I confirm with
+        you later?" "Surely, we can talk in a conference room during the afternoon break."
+
+  判定：【机翻胜】
+  差异：★人名处理是分水岭。
+        ym 直译"小王"→the little king（不是人名），且后面又把引语给错了人。
+        机翻把"小王/小张"全部降级成 he/him（丢失人名，但至少语义没崩）。
+        另外 ym 把"你昨天怎么没来开会"→how did you come（"没来"译成"来了"），
+        这是方向性错误。
+
+
+--------------------------------------------------------------------------------
+长程一致性类（3 例）
+--------------------------------------------------------------------------------
+
+----[10] 一致性-代词（67 字）----
+  中文：张教授把他的研究笔记交给了他的学生，因为他说他自己已经用不上了，希望这些
+        笔记能帮助她少走一些弯路。他的学生接过笔记，感动得说不出话来。
+
+  ym  ：Professor Zhang gave his study notes to his students because he said he had not
+        finished , and hoped that they would help her to walk away .
+
+  机翻：Professor Zhang gave his research notes to his students because he said he could no
+        longer use them, hoping that they would help her to take less turns. His students
+        took the notes, and they couldn't speak.
+
+  判定：【机翻胜】
+  差异：★这题的核心考点是"她 ← 学生"，用代词制造性别错位。
+        ym 完全译错原因（"用不上了"→had not finished），
+        且丢掉最后一句（"感动得说不出话"）。
+        机翻保住了全部结构，"少走弯路"→take less turns（错但可猜），
+        但至少"his students took the notes"和"couldn't speak"都在。
+
+
+----[11] 一致性-时态（61 字）----
+  中文：我去年在杭州工作，那时候每天骑自行车上班。现在我搬到了上海，改坐地铁了。
+        明年我打算去北京，到时候估计得习惯更长的通勤时间。
+
+  ym  ：I worked in Hangzhou last year , when I rode my bike every day . now I moved to
+        Shanghai , and I decided to go to Beijing to make sure I had longer hours of commute .
+
+  机翻：I worked in Hangzhou last year, when I rode a bike to work every day. Now I moved
+        to Shanghai and took the subway. Next year I'm going to Beijing, and I'll get used
+        to longer commutes.
+
+  判定：【机翻胜】
+  差异：ym 丢失"改坐地铁了"，且把三段时间（去年/现在/明年）压成两段，
+        "明年我打算"被并进了"now…decided"。
+        机翻时态链完整（worked → moved/took → I'm going to / I'll get used to）。
+
+
+----[12] 一致性-术语（84 字）----
+  中文：本次实验采用了 Transformer 架构，使用 AdamW 优化器，学习率设置为三乘以十的
+        负四次方，批次大小为三十二。训练结束后，我们在验证集上测试了模型的困惑度。
+
+  ym  ：after the experiment , we tested the puzzles of the model on the test .
+        （仅 71 字符，前 60 字全部漏译）
+
+  机翻：The experiment uses a Transformer architecture using AdamW optimisers, learning
+        rates set at three times ten negative fours and batch size at thirty-two. After the
+        training, we tested the confusion of the model on the validation set.
+
+  判定：【机翻胜（ym 严重漏译）】
+  差异：★ym 只翻了最后半句，且"困惑度"→puzzles（应为 perplexity）、
+        "验证集"→the test（丢失 validation）。
+        机翻完整保留 Transformer / AdamW / batch size / could 全部术语，
+        仅"困惑度"→confusion（也错）、"三乘以十的负四次方"→three times ten
+        negative fours（口语化展开，不标准）。
+
+
+--------------------------------------------------------------------------------
+超长综合类（1 例，342 字）
+--------------------------------------------------------------------------------
+
+----[13] 短文-综合（342 字）----
+  中文：清晨六点，闹钟准时响起。我挣扎着从床上爬起来，拉开窗帘，外面的天空还是
+        一片灰蒙蒙的。洗漱完毕后，我给自己冲了一杯咖啡，坐在书桌前开始处理昨天没做完
+        的工作。电脑屏幕的蓝光映在脸上，键盘敲击声在安静的房间里格外清晰。大约过了
+        两个小时，阳光终于透过云层照了进来，屋子里一下子亮堂了许多。我伸了个懒腰，
+        决定出门走走。小区门口的早餐店已经开始忙碌，老板娘热情地招呼着每一位客人。
+        我点了一碗豆浆和两个包子，坐在角落里慢慢吃着，看着来来往往的行人。有人行色
+        匆匆，有人悠闲散步，每个人的脸上都写着不同的故事。吃完早餐，我沿着河边的小路
+        走了一圈，微风拂过水面，泛起层层涟漪，几只野鸭悠闲地游过。这一刻，我感到
+        前所未有的平静。回到家后，我重新坐到电脑前，思路竟然变得清晰起来，之前卡了
+        很久的问题迎刃而解。
+
+  ym  ：at six o 'clock the alarm clock rang . I struggled to climb out of bed , pull out
+        the curtain , and the sky was grey . after the washing @-@ out , I put myself a cup
+        of coffee , and sat down at the desk and began to handle yesterday 's work . the blue
+        light on the face of the computer screen was in the face , the keyboard struck the
+        sound of a quiet room . I stretched out my legs and decided to go out . the breakfast
+        shop in the small area began to be busy , and the boss 's lady greeted everyone with
+        enthusiasm . I had a bowl of beans and two bags , and sat down in the corner , and
+        looked at the pedestrians . I had a bowl of beans and two bags , and sat down in the
+        corner , and looked at the pedestrians . I had a long way of getting quiet and I had
+        a little walk , and I had a little duckling around the water , and a few wild duckling
+        swam across the water . this moment I felt as though I had been calm . after I got
+        home , I sat back to the computer , and thoughtfully , before the cards were long .
+
+  机翻：At about six a.m., the alarm clock was ringing on time. I climbed up from my bed,
+        pulled the curtains open, and the sky was covered in gray. After cleaning, I made
+        myself a cup of coffee and sat at the desk to deal with the work that had not been
+        done yesterday. The blue light of the computer screen was on the face, the keyboard
+        hit was clear outside the quiet room. After about two hours, the sun finally came in
+        through the clouds, and everyone had a different story on their faces. After breakfast,
+        I went out of the water, the breeze went up and down the water and a few wild ducks
+        came up. I ordered a bowl of beans and two buns and sat in the corner, and I looked at
+        the usual walkers. I was calm and I came back to my house, and it was clear that I had
+        to go to the computer before I left.
+
+  判定：【都错（双方都严重崩坏）】
+  差异：★超长文本双方都失控。
+        ym：超过 200 字后开始重复（"I had a bowl of beans and two bags"连出两遍），
+            后半段语义漂移（"野鸭"→duckling 小鸭、"思路清晰"→before the cards were long
+            完全不知所云）。
+        机翻：前面 3 句尚可，第 4 句起开始跳句（"屋子里亮堂了"直接跳到
+            "每个人脸上写着故事"，中间整段丢失），后半段同样语义崩坏。
+        结论：342 字超出双方的稳定生成能力。
+
+
+================================================================================
+第三章  英译中方向（47 句，参考性）
+================================================================================
+
+说明：OPUS-MT 的该权重是 zh→en 单向模型，无法做 en→zh，故本章只有 ym 单边结果。
+
+--------------------------------------------------------------------------------
+A 类 · 英文语气词 / 基础句 → 中文（7 句）
+--------------------------------------------------------------------------------
+  输入                               ym 输出                        判定
+------------------------------------------------------------------------------------------
+  Are you a student?                 你是个学生？                   好
+  Oh, how beautiful!                 哦，多么美丽！                 好
+  Hurry up!                          快点！                        好
+  Where are you going?               你去哪儿？                     好
+  Let's go.                          我们走吧。                     好
+  It's easy.                         这很容易。                     好
+  Don't go if you don't want to.     如果你不想去就别去。            好
+
+  小计：6-7 句好，方向感正常。
+
+
+--------------------------------------------------------------------------------
+C 类 · 孤立应答语 ★崩溃★
+--------------------------------------------------------------------------------
+  输入          ym 输出
+------------------------------------------------------------------------------------------
+  Uh-huh.       哈吉先生(乌拉圭)(以西班牙语发言):主席先生，我谨感谢你召开这次会议，
+                讨论乌拉圭在联合国系统内开展的活动。
+
+  Huh?          你好，我好想你，先生，我好想你，先生，我好想你，先生……
+
+  （另一处）     你，你看，你，你看，你，你看，你，你看……
+
+  判定：【严重故障】
+
+  ★故障 1：联合国语料泄漏
+    输入孤立英文语气词 "Uh-huh."，模型从 MultiUN 语料中"背"出了整段联合国发言。
+    说明短英文输入的训练样本严重不足，最强记忆变成了联合国套话。
+
+  ★故障 2：无限循环
+    "Huh?" 触发 "我好想你，先生" 的无限重复；
+    另一处触发 "你，你看" 的死循环。
+
+
+--------------------------------------------------------------------------------
+D / F 类 · 感叹词与委婉语
+--------------------------------------------------------------------------------
+  输入                               ym 输出                        判定
+------------------------------------------------------------------------------------------
+  Oh no, I forgot my keys.           哦，不，我忘了钥匙              好
+  Ouch, that hurts!                  我该怎么办？                   错
+  Thanks for your hard work.         谢谢你辛苦的工作              好
+  You flatter me.                    你平分我                      错
+
+  点评："Ouch, that hurts!"→"我该怎么办？"是完全无关的输出。
+        "You flatter me."→"你平分我"是把 flatter 当成了"平分"（与 fair 混淆），
+        正确应为"你过奖了"。
+
+
+================================================================================
+第四章  汇总计分
+================================================================================
+
+【短句对比 · 中译英 47 句】
+
+  ┌────────────────────┬──────┬──────────┬────────┬────────┬──────────┐
+  │ 类别                │ 句数  │ ym 胜     │ 机翻胜  │ 平手    │ 都错     │
+  ├────────────────────┼──────┼──────────┼────────┼────────┼──────────┤
+  │ A 句末语气词         │  6   │   0      │   3    │   3    │   0      │
+  │ B 体标记时态         │  5   │   0      │   3    │   2    │   0      │
+  │ C 口语应答语         │ 12   │   0      │  10    │   0    │   2      │
+  │ D 感叹词             │  5   │   0      │   1    │   4    │   0      │
+  │ E 话语标记           │ 10   │   0      │   8    │   1    │   1      │
+  │ F 委婉敬语           │  6   │   0      │   4    │   1    │   1      │
+  │ G 对照组             │  3   │   0      │   0    │   3    │   0      │
+  ├────────────────────┼──────┼──────────┼────────┼────────┼──────────┤
+  │ 合计                 │ 47   │   0      │  29    │  14    │   4      │
+  │ 占比                 │      │   0%     │  62%   │  30%   │   9%     │
+  └────────────────────┴──────┴──────────┴────────┴────────┴──────────┘
+
+
+【长文本对比 · 中译英 13 例】
+
+  ┌────────────────────┬──────┬──────────┬────────────┬──────────────────────┐
+  │ 案例                │ ym   │ 机翻      │ 判定        │ 关键差异              │
+  ├────────────────────┼──────┼──────────┼────────────┼──────────────────────┤
+  │ 01 长句-新闻         │ 偏   │ 好       │ 机翻胜      │ "超六成"挂错、"高于整体"漏 │
+  │ 02 长句-技术         │ 崩   │ 崩       │ 都错        │ 4096 双方都译错         │
+  │ 03 长句-日常         │ 偏   │ 偏       │ 机翻胜      │ ym 把"老同学"当时间     │
+  │ 04 长句-商务         │ 较好 │ 好       │ 机翻胜(差距小)│ ym 表现最佳句          │
+  │ 05 长句-描述         │ 崩   │ 较好     │ 机翻胜      │ ym 主谓错乱 + 重复      │
+  │ 06 段落-记叙         │ 崩★  │ 较好     │ 机翻胜      │ ym 死循环×68           │
+  │ 07 段落-说明         │ 偏   │ 好       │ 机翻胜      │ 术语保住，语序崩        │
+  │ 08 段落-议论         │ 截断 │ 截断     │ 都错        │ 双方都只翻前两句        │
+  │ 09 段落-对话         │ 崩   │ 较好     │ 机翻胜      │ ym 人名直译"小王"       │
+  │ 10 一致性-代词       │ 偏   │ 较好     │ 机翻胜      │ ym 丢末句 + 因果译反    │
+  │ 11 一致性-时态       │ 偏   │ 好       │ 机翻胜      │ ym 丢失"改坐地铁"       │
+  │ 12 一致性-术语       │ 崩★  │ 好       │ 机翻胜      │ ym 只翻末半句(漏60字)   │
+  │ 13 短文-综合         │ 崩   │ 崩       │ 都错        │ 342字超双方稳定长度     │
+  └────────────────────┴──────┴──────────┴────────────┴──────────────────────┘
+
+  计分：ym 胜 0 / 机翻胜 8 / 都错 4 / 平手 0
+        （其中"02"是双方都错但 ym 错得更彻底，"13"是双方都崩）
+
+
+【速度对比】
+
+  ┌──────────────┬──────────────────────┬──────────────────────┐
+  │ 场景          │ ym-Translation       │ OPUS-MT (beam=4)     │
+  ├──────────────┼──────────────────────┼──────────────────────┤
+  │ 短句 (47句均值)│ 0.19 – 0.29 s/句     │ 0.20 – 0.99 s/句     │
+  │ 长句 (5句)    │ 2.51 – 3.74 s/例     │ 0.22 – 0.56 s/例     │
+  │ 超长 (342字)  │ 2.73 s               │ 0.96 s               │
+  └──────────────┴──────────────────────┴──────────────────────┘
+
+  说明：短句场景（手机端最常用）我们略快；但长文本场景机翻的 beam search
+        在 GPU 上并行效率更高，反而更快。
+
+
+================================================================================
+第五章  结论与下一步
+================================================================================
+
+【一句话结论】
+  这一轮 OPUS-MT 全面获胜。但我们的差距集中在【口语 / 语用 / 长文本稳定性】，
+  基础翻译能力（G 类对照组 3:3 打平）已经追平机翻。
+
+
+【三个关键观察】
+
+  观察 1 · 对照组完全打平 —— 日常句子已达标
+    45/46/47 三句日常句双方输出几乎一致。这印证了此前判断：
+    "一般的英文我们已经能够基本上翻译正确了"，差距只在口语与语用。
+
+  观察 2 · 我们的多数失败是"可控失稳"，不是"能力不足"
+    ├─ 死循环（06 记叙 ×68、17/18/40 语气词）→ Beam search / repetition penalty 可治
+    ├─ 超长截断（12 术语、08 议论）→ 长度惩罚 / 分段译可治
+    └─ 口语缺样本（C 类 0:10）→ 补 OpenSubtitles 字幕语料可治
+
+  观察 3 · 有些错是"时代局限"，机翻同样栽
+    ┌──────────────────────┬────────────────────┬──────────────────┐
+    │ 源句                  │ 双方输出            │ 正确             │
+    ├──────────────────────┼────────────────────┼──────────────────┤
+    │ 我知道了。            │ 都写 I know        │ I see            │
+    │ 我知道了，你不用说了。 │ 都写 I know        │ I got it         │
+    │ 哪里哪里。            │ where / Where?     │ You flatter me  │
+    │ 差不多得了。          │ almost / Almost…   │ That's enough   │
+    │ 4096 个令牌           │ four-thousand…/…   │ 4096 tokens     │
+    │ 困惑度                │ puzzles / confusion│ perplexity      │
+    └──────────────────────┴────────────────────┴──────────────────┘
+
+    ★"我知道了 → I know" 这个错，OPUS-MT（更大的模型 + OPUS 全量数据）
+      和我们犯得一模一样。这意味着：**语用映射是数据稀缺问题，不只是模型大小问题。**
+      谁能把这类语用对补上，谁就能在这种句子上反超机翻。
+
+
+【下一步建议（按性价比排序）】
+
+  P0 ─ 推理端改造（1 行代码，立刻见效）
+       ├─ 加 beam search（num_beams=4）
+       └─ 加 repetition_penalty=1.2 / no_repeat_ngram_size=3
+       预期：直接消除"嗯嗯→uh,uh,uh…"这类循环失控（占我们失败的一大半）
+
+  P1 ─ 补口语语料（治 C 类 0:10 的完败）
+       └─ OpenSubtitles zh-en 字幕，约 20M 句对
+
+  P1 ─ 补语用等价对（可实现对机翻的反超）
+       └─ 把 prag_*.bin 的 REPEAT 从 1500 提到 5000+，或单独跑一轮小 lr 微调
+       预期：专攻 "我知道了→I see" 这类双方都错的句子上，我们能赢
+
+  P2 ─ 补长文本稳定性
+       ├─ 长度惩罚 + min_length
+       └─ 超长文本分段译
+
+  P2 ─ 降 MultiUN 权重（1 → 0.5）
+       └─ 减少英译中方向被"联合国套话"污染
+
+  P3 ─ 放大模型（54M → 150M+）
+       └─ 与 OPUS-MT 参数量对齐，但成本最高，优先级最低
+
+
+================================================================================
+附：原始数据来源
+================================================================================
+  · ym 短句评估  ：scripts/eval_v3.py        → output/ckpt2/latest.pt
+  · ym 英译中评估：scripts/eval_en2zh.py     → output/ckpt2/latest.pt
+  · ym 长文本评估：scripts/eval_long.py      → output/ckpt2/latest.pt
+  · 机翻长文本   ：opusmt_zh_en（Helsinki-NLP/opus-mt-zh-en, 77.9M）
+  · 实例          ：dsw-2230987-5c9f4b45fd-s7sf5（DSW-AMD / MI300A）
+================================================================================

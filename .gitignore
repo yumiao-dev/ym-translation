@@ -1,0 +1,34 @@
+# ── 模型权重（每个 623MB，超出 GitHub 限制，用 Release / HF 托管）──
+*.pt
+*.pth
+*.safetensors
+*.onnx
+*.tflite
+
+# ── 数据（15.9GB，不入库）──
+data/
+*.bin
+*.csv
+*.tsv
+
+# ── 训练输出 ──
+output/
+*.log
+!logs/*.log
+
+# ── 安全：绝不提交 ──
+*cookie*
+*token*.txt
+.env
+
+# ── Python ──
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# ── 编辑器 ──
+.vscode/
+.idea/
+.DS_Store

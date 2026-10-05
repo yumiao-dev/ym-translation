@@ -1,0 +1,9 @@
+# ym-Translation 依赖
+# 实测环境：AMD ROCm 7.2 + PyTorch 2.12（ROCm 走 CUDA 接口）
+torch>=2.3.0
+numpy>=1.24.0
+
+# 评估用（机翻基线对照）
+transformers>=4.40.0
+sentencepiece>=0.1.99
+sacremoses>=0.1.0
