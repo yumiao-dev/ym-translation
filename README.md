@@ -1,10 +1,15 @@
 # ym-Translation
 
+**中文 | [English](README_en.md)**
+
 > 从零预训练的 **54.4M 参数**中英双向翻译小模型，目标是在安卓端侧**离线**运行。
+> **单卡 AMD Instinct MI300A，纯训练约 8.2 小时，4.2B tokens。**
 
 [![params](https://img.shields.io/badge/params-54.4M-blue)]()
 [![tokens](https://img.shields.io/badge/trained-4.2B_tokens-green)]()
 [![context](https://img.shields.io/badge/context-4K_(extrapolatable_8K)-orange)]()
+[![hardware](https://img.shields.io/badge/hardware-1%C3%97_AMD_MI300A-red)]()
+[![time](https://img.shields.io/badge/train-~8.2h-purple)]()
 [![status](https://img.shields.io/badge/status-work_in_progress-yellow)]()
 
 ---

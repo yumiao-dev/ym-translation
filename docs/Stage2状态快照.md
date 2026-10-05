@@ -247,8 +247,7 @@ ls -lh /mnt/workspace/ym-Translation/output/ckpt2/
 
 ## 八、环境备忘
 
-- **入口**：`https://www.modelscope.cn/code/workspace`（只需 ModelScope 登录态，绕开阿里云 DSW 的 40 分钟 cookie 过期）
-- **cookie 注入顺序**：先 `inject_cookies.sh` → 再 `open(url)` → 再 reload，且 URL 必须带 `www`
+- **入口**：`https://www.modelscope.cn/code/workspace`（ModelScope 登录态即可）
 - **NAS 共享**：`/mnt/workspace` 挂在同一天翼云 NAS，CPU 实例与 AMD 实例**零拷贝共享数据与检查点**
 - **实例启动**：需要滑块验证，由用户手动完成
 - **`torch` 版本差异**：CPU 实例是 2.3.1（无 `nn.RMSNorm`，需 `rmsnorm_shim.py`）；AMD 实例是 2.12.0（原生支持）

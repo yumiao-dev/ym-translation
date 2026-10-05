@@ -228,8 +228,5 @@ python3 scripts/eval_en2zh.py --ckpt output/ckpt2/latest.pt
 ## 七、环境备忘
 
 - **入口**：`https://www.modelscope.cn/code/workspace`
-- **cookie 注入顺序**：先 `inject_cookies.sh` → 再 `open(url)` → 再 reload，URL 必须带 `www`
 - **NAS 共享**：`/mnt/workspace` 挂同一天翼云 NAS，CPU 实例与 AMD 实例**零拷贝共享**
 - **实例启动**：需滑块验证，由用户手动完成
-- **终端读取技巧**：终端在 **iframe** 内，顶层 `document.querySelector('.xterm')` 查不到，需遍历 `iframe.contentDocument`
-- **传输技巧**：`heredoc` 与 `printf >` 的重定向符会被 xterm 吞掉；用 `echo -n '<base64>' > file` 分片追加最可靠
