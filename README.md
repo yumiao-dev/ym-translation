@@ -11,6 +11,21 @@
 [![hardware](https://img.shields.io/badge/hardware-1%C3%97_AMD_MI300A-red)]()
 [![time](https://img.shields.io/badge/train-~8.2h-purple)]()
 [![status](https://img.shields.io/badge/status-work_in_progress-yellow)]()
+[![hf](https://img.shields.io/badge/%F0%9F%A4%97_weights-Hugging_Face-yellow)](https://huggingface.co/yumiao-dev/ym-translation)
+
+---
+
+## 模型权重
+
+权重托管在 **Hugging Face**，本仓库只放代码与文档、**不含权重文件**：
+
+| | |
+|---|---|
+| 🤗 仓库 | [yumiao-dev/ym-translation](https://huggingface.co/yumiao-dev/ym-translation) |
+| 文件 | `model.safetensors`（135 MB, FP16）+ config + tokenizer |
+| 一条命令下载 | `huggingface-cli download yumiao-dev/ym-translation --local-dir ym-weights` |
+
+> 国内网络可先设镜像：`export HF_ENDPOINT=https://hf-mirror.com`
 
 ---
 

@@ -12,6 +12,20 @@
 [![hardware](https://img.shields.io/badge/hardware-1%C3%97_AMD_MI300A-red)]()
 [![time](https://img.shields.io/badge/train-~8.2h-purple)]()
 [![status](https://img.shields.io/badge/status-work_in_progress-yellow)]()
+[![hf](https://img.shields.io/badge/%F0%9F%A4%97_weights-Hugging_Face-yellow)](https://huggingface.co/yumiao-dev/ym-translation)
+
+---
+
+## Model weights
+
+Weights are hosted on **Hugging Face**. This repo contains code and docs only —
+**no weight files**:
+
+| | |
+|---|---|
+| 🤗 Repo | [yumiao-dev/ym-translation](https://huggingface.co/yumiao-dev/ym-translation) |
+| Files | `model.safetensors` (135 MB, FP16) + config + tokenizer |
+| One-line download | `huggingface-cli download yumiao-dev/ym-translation --local-dir ym-weights` |
 
 ---
 
