@@ -1,7 +1,7 @@
 # 评估数据说明
 
 本目录包含 **FLORES-200 devtest 中译英（zho_Hans → eng_Latn，1012 句）** 的完整评测原始数据，
-所有分数均由 `sacrebleu 2.6.0` 在 **AMD Instinct MI300A** 上计算。
+所有分数均由 `sacrebleu 2.6.0` 在 **AMD Instinct MI300X** 上计算。
 
 ## 文件
 
