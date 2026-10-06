@@ -48,6 +48,77 @@ conversational pragmatics is still the weak spot.
 
 ---
 
+## Positioning & comparison
+
+> Everything below is **our own head-to-head testing**, not a third-party ranking.
+> Test setup and raw data live in [`eval/`](eval).
+
+### Where we claim to stand (qualified wording)
+
+| Claim | Basis |
+|---|---|
+| We **could not find a smaller open-source bidirectional zh↔en** model | 54.4M, one model for both directions |
+| **From scratch**: random init, trained in stages to 8.3B tokens | not distilled, not fine-tuned |
+| Highest FLORES-200 zh→en BLEU **within our 50–60M comparison set** | 17.50 |
+| Parameter efficiency **0.322 BLEU per million params** | vs OPUS-MT 0.297, m2m100 0.046 |
+| **One of the few** decoder-only models reaching usable quality at 54M | mainstream MT is encoder-decoder |
+| Apache-2.0: weights + code + training scripts all open | no commercial restriction |
+
+### FLORES-200 devtest zh→en · head-to-head (1012 sentences)
+
+| Model | Params | Architecture | Direction | BLEU | chrF |
+|---|---|---|---|---|---|
+| OPUS-MT (Helsinki) | 77.9M ×2 | Encoder-Decoder | one-way zh→en | **23.16** | **53.60** |
+| m2m100-418M (Meta) | 418M | Encoder-Decoder | 100 languages | 19.14 | 49.99 |
+| **★ ym-translation Stage 3** | **54.4M** | Decoder-only | **bidirectional** | 17.50 | 46.46 |
+| ym-translation Stage 2 | 54.4M | Decoder-only | bidirectional | 11.80 | 41.77 |
+
+- `chrF` here is sacrebleu's `chrF`; ym / OPUS `chrF++` are **43.98 / 50.97**.
+- The ym and OPUS rows are **re-computable offline** from [`eval/`](eval);
+  the m2m100 row was measured in **our own sandbox** (CPU, default transformers decoding)
+  and is not shipped in `eval/`.
+
+### Parameter efficiency
+
+| Model | BLEU per million params |
+|---|---|
+| **ym-translation Stage 3** | **0.322** |
+| OPUS-MT (one direction) | 0.297 |
+| m2m100-418M | 0.046 |
+
+### The real cost of bidirectional translation
+
+| Setup | Total params for both directions |
+|---|---|
+| OPUS-MT | 77.9M (zh→en) + 77.9M (en→zh) = **155.8M** |
+| **ym-translation** | **54.4M** (one model, both directions) |
+
+For zh↔en, ym uses **~35%** of the parameters and keeps **75.6%** of OPUS-MT's one-way BLEU.
+
+### Quantized size (**projected**)
+
+> int8 / int4 quantization is **not implemented yet** (roadmap P3); the numbers below
+> are estimates derived from the parameter count.
+
+| Model | FP32 | int8 | int4 |
+|---|---|---|---|
+| **ym-translation** | **208 MB** | ~54 MB | ~27 MB |
+| OPUS-MT (both directions) | ~0.62 GB | ~0.16 GB | ~78 MB |
+| m2m100-418M | 1.94 GB | ~0.48 GB | ~0.24 GB |
+
+### Inference speed
+
+| Platform | ym-translation | OPUS-MT (beam=4) | m2m100-418M |
+|---|---|---|---|
+| MI300X GPU (single sentence, bf16 / greedy) | **184 ms/sent** | 34 ms/sent | — |
+| Our sandbox CPU (FP32 / greedy) | **0.99 s/sent** | ~1.5 s/sent | ~1.3 s/sent |
+
+The GPU row uses the same setup as [`eval/`](eval); the CPU row was measured in
+**our own sandbox** (m2m100 took ~22 min for all 1012 sentences) and is provided
+as an on-device reference.
+
+---
+
 ## Release artifacts
 
 | File | Description |
