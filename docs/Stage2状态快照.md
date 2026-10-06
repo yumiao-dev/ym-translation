@@ -1,7 +1,7 @@
 # ym-Translation Stage 2 续训 · 状态记录
 
 **更新时间**：2026-10-05 07:19
-**实例**：`dsw-2230987-5c9f4b45fd-s7sf5`（DSW-AMD / AMD Instinct MI300A）
+**实例**：`dsw-2230987-5c9f4b45fd-s7sf5`（DSW-AMD / AMD Instinct MI300X）
 **规格**：ROCm 7.2.53211 · torch 2.12.0+git6bbd260 · HBM 191.7 GB
 
 ---
