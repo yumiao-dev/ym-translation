@@ -3,14 +3,14 @@
 **中文 | [English](README_en.md)**
 
 > 从零预训练的 **54.4M 参数**中英双向翻译小模型，目标是在安卓端侧**离线**运行。
-> **单卡 AMD Instinct MI300A，纯训练 20 小时 40 分，8.3B tokens。**
+> **单卡 AMD Instinct MI300X，纯训练 20 小时 40 分，8.3B tokens。**
 
 [![params](https://img.shields.io/badge/params-54.4M-blue)]()
 [![tokens](https://img.shields.io/badge/trained-8.3B_tokens-green)]()
 [![bleu](https://img.shields.io/badge/FLORES--200_BLEU-17.50-orange)]()
 [![chrf](https://img.shields.io/badge/chrF%2B%2B-43.98-blueviolet)]()
 [![context](https://img.shields.io/badge/context-4K_(extrapolatable_8K)-orange)]()
-[![hardware](https://img.shields.io/badge/hardware-1%C3%97_AMD_MI300A-red)]()
+[![hardware](https://img.shields.io/badge/hardware-1%C3%97_AMD_MI300X-red)]()
 [![time](https://img.shields.io/badge/train-20h40m-purple)]()
 [![status](https://img.shields.io/badge/status-work_in_progress-yellow)]()
 [![hf](https://img.shields.io/badge/%F0%9F%A4%97_weights-Hugging_Face-yellow)](https://huggingface.co/yumiao-dev/ym-translation)
@@ -200,7 +200,7 @@ CTX       = 4096     # RoPE base=500000，可外推 8K
 | 项 | 规格 |
 |---|---|
 | 平台 | ModelScope Code Workspace（DSW-AMD） |
-| 加速卡 | **AMD Instinct MI300A**（APU 统一内存） |
+| 加速卡 | **AMD Instinct MI300X** |
 | 显存 | 191.7 GB |
 | GPU 利用率 | 96–100%（全程满负载） |
 
@@ -424,4 +424,4 @@ Apache-2.0
 
 - 语料：[OPUS](https://object.pouta.csc.fi)、ModelScope `iic/WMT-zh-en`
 - 基线：[Helsinki-NLP/opus-mt-zh-en](https://huggingface.co/Helsinki-NLP/opus-mt-zh-en)
-- 平台：ModelScope Code Workspace / AMD Instinct MI300A
+- 平台：ModelScope Code Workspace / AMD Instinct MI300X
