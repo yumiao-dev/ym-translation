@@ -1,5 +1,5 @@
 #!/bin/bash
-# ym-Translation Stage2 续训 —— 一键启动（在 AMD MI300A 实例的终端里跑）
+# ym-Translation Stage2 续训 —— 一键启动（在 AMD MI300X 实例的终端里跑）
 # 用法：bash /mnt/workspace/ym-Translation/scripts/start_stage2.sh
 set -u
 cd /mnt/workspace/ym-Translation || exit 1
@@ -18,7 +18,7 @@ if torch.cuda.is_available():
     print("mem GB", round(p.total_memory/1024**3, 1))
     print("count", torch.cuda.device_count())
 else:
-    print("!! 没有可用 GPU —— 请确认切到了 AMD MI300A 实例")
+    print("!! 没有可用 GPU —— 请确认切到了 AMD MI300X 实例")
 PY
 
 echo
