@@ -1,0 +1,13 @@
+{
+  "name": "YM_S2",
+  "n": 1012,
+  "hyp_file": "YM2_hyp.txt",
+  "BLEU_13a": 11.7971,
+  "BLEU_zh": 9.7635,
+  "chrF": 41.7699,
+  "chrF++": 39.2669,
+  "TER": 103.2967,
+  "avg_hyp_words": 27.35,
+  "avg_ref_words": 21.64,
+  "empty_hyps": 0
+}

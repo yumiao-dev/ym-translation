@@ -1,0 +1,13 @@
+{
+  "name": "OPUS",
+  "n": 1012,
+  "hyp_file": "opus_hyp.txt",
+  "BLEU_13a": 23.163,
+  "BLEU_zh": 23.065,
+  "chrF": 53.6023,
+  "chrF++": 50.9695,
+  "TER": 65.7367,
+  "avg_hyp_words": 21.79,
+  "avg_ref_words": 21.64,
+  "empty_hyps": 0
+}

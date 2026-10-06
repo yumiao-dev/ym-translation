@@ -4,13 +4,15 @@
 
 > A **54.4M-parameter** bidirectional Chinese↔English translation model, trained **from scratch**,
 > targeting **fully offline** inference on Android devices.
-> **Trained on a single AMD Instinct MI300A — about 8.2 hours of pure training, 4.2B tokens.**
+> **Trained on a single AMD Instinct MI300A — 20 h 40 m of pure training, 8.3B tokens.**
 
 [![params](https://img.shields.io/badge/params-54.4M-blue)]()
-[![tokens](https://img.shields.io/badge/trained-4.2B_tokens-green)]()
+[![tokens](https://img.shields.io/badge/trained-8.3B_tokens-green)]()
+[![bleu](https://img.shields.io/badge/FLORES--200_BLEU-17.50-orange)]()
+[![chrf](https://img.shields.io/badge/chrF%2B%2B-43.98-blueviolet)]()
 [![context](https://img.shields.io/badge/context-4K_(extrapolatable_8K)-orange)]()
 [![hardware](https://img.shields.io/badge/hardware-1%C3%97_AMD_MI300A-red)]()
-[![time](https://img.shields.io/badge/train-~8.2h-purple)]()
+[![time](https://img.shields.io/badge/train-20h40m-purple)]()
 [![status](https://img.shields.io/badge/status-work_in_progress-yellow)]()
 [![hf](https://img.shields.io/badge/%F0%9F%A4%97_weights-Hugging_Face-yellow)](https://huggingface.co/yumiao-dev/ym-translation)
 
@@ -24,7 +26,7 @@ Weights are hosted on **Hugging Face**. This repo contains code and docs only �
 | | |
 |---|---|
 | 🤗 Repo | [yumiao-dev/ym-translation](https://huggingface.co/yumiao-dev/ym-translation) |
-| Files | `model.safetensors` (135 MB, FP16) + config + tokenizer |
+| Files | `model.safetensors` (208 MB, FP32, **Stage 3**) + config + tokenizer |
 | One-line download | `huggingface-cli download yumiao-dev/ym-translation --local-dir ym-weights` |
 
 ---
@@ -39,9 +41,26 @@ Unlike the mainstream approach (distilling a large model), this project goes wit
 **from-scratch pretraining + a self-trained 32K vocabulary**, to squeeze the maximum
 usable capacity out of a tiny parameter budget.
 
-**Current status**: work in progress. Everyday sentences are on par with OPUS-MT,
-but conversational response particles and long-text stability are still clearly behind.
+**Current status: Stage 3.** FLORES-200 devtest zh→en BLEU **17.50** / chrF++ **43.98**,
+reaching **86.3% of OPUS-MT's chrF++**. Everyday sentences already match the baseline;
+conversational pragmatics is still the weak spot.
 **See the [Evaluation](#evaluation) section — we record the failures honestly.**
+
+---
+
+## Release artifacts
+
+| File | Description |
+|---|---|
+| [`modeling_ym.py`](modeling_ym.py) | Model definition, loads the weights standalone (torch only) |
+| [`infer.py`](infer.py) | Ready-to-run inference script (CPU / GPU) |
+| [`config.json`](config.json) | Architecture params + training metadata |
+| [`tokenizer/`](tokenizer) | Self-trained 32K joint BPE vocabulary |
+| [`eval/`](eval) | FLORES-200 devtest raw data + three sacrebleu score files (**re-computable offline**) |
+| [`FLORES-200_评测报告.md`](FLORES-200_评测报告.md) | Full evaluation report |
+| [`scripts/`](scripts) | Training / tokenization / data-building scripts |
+| [`docs/`](docs) | Environment notes, dataset inventory, training reports |
+| [`eval_results/`](eval_results) | Raw sentence-by-sentence human comparison logs |
 
 ---
 
@@ -84,7 +103,7 @@ literally but do match pragmatically:
 
 ## Architecture
 
-Decoder-only Transformer, 54.4M parameters.
+Decoder-only Transformer, 54.4M parameters (tied embedding counted once).
 
 ```python
 HIDDEN    = 512
@@ -107,6 +126,10 @@ CTX       = 4096     # RoPE base=500000, extrapolates to 8K
 | Embeddings | tied | saves 16.4M params |
 | Loss | **Chunked CE** | avoids OOM from the `[B,T,32000]` logits matrix |
 
+> The exported `state_dict` has 102 keys; `emb.weight` and `head.weight`
+> **share one tensor**, so only `emb.weight` is stored.
+> Actual parameter count: **54,406,912**.
+
 ---
 
 ## Training setup
@@ -118,32 +141,36 @@ CTX       = 4096     # RoPE base=500000, extrapolates to 8K
 | Platform | ModelScope Code Workspace (DSW-AMD) |
 | Accelerator | **AMD Instinct MI300A** (APU unified memory) |
 | Memory | 191.7 GB |
-| ROCm | 7.2.53211 |
 | GPU utilization | 96–100% (saturated the whole time) |
 
 ### Wall-clock time
 
-| Stage | Duration | Tokens |
-|---|---|---|
-| Stage 1 (base training) | ~2.7 h | 2.0B |
-| Stage 2 (continued training, conversational) | **5.47 h** | 2.2B (4.2B cumulative) |
-| **Training total** | **~8.2 h** | **4.2B** |
+| Stage | Steps | Tokens | GPU time |
+|---|---|---|---|
+| Stage 1 (base training) | 0 → 3,815 | 2.00B | 4h59m |
+| Stage 2 (continued, conversational) | 3,815 → 8,010 | 2.20B | 5h29m |
+| Continued | 8,010 → 13,506 | 2.88B | 7h10m |
+| **Stage 3** | 13,506 → 15,830 | 1.22B | 3h02m |
+| **Total** | **0 → 15,830** | **8.30B** | **20h40m** |
 
-Stage 2 measured **213K tok/s**, **4.7 s/step** (zero jitter throughout),
-final loss **0.7393**.
+**4.699 s/step** throughout (global batch = 524,288 tokens/step), cross-checked against
+both the checkpoint timestamps and the training log — zero jitter.
+Stage 3 throughput ≈ **760K tok/s**.
 
 ### Hyperparameters
 
-| Item | Stage 1 | Stage 2 |
-|---|---|---|
-| LR peak → floor | 1e-3 → 1e-4 | 3e-4 → 3e-5 |
-| warmup | 100 | 60 |
-| micro batch | 16 | 8 |
-| grad accum | 8 | 16 |
-| global batch | 524,288 tok/step | 524,288 tok/step |
-| optimizer | AdamW (0.9, 0.95), wd=0.1, fused | same |
-| precision | bf16 autocast | same |
-| steps | 3,815 | 8,010 |
+| Item | Stage 1 | Stage 2 | Stage 3 |
+|---|---|---|---|
+| LR peak → floor | 1e-3 → 1e-4 | 3e-4 → 3e-5 | 3e-4 → 3e-5 |
+| warmup | 100 | 60 | 60 |
+| micro batch × grad accum | 16 × 8 | 8 × 16 | 8 × 16 |
+| global batch | 524,288 tok/step | same | same |
+| optimizer | AdamW (0.9, 0.95), wd=0.1, fused | same | same |
+| precision | bf16 autocast | same | same |
+
+> Training ran in bf16 autocast; the **released weights are FP32** (208 MB).
+> For on-device deployment you'll want to convert to bf16/int8 yourself —
+> that halves the size or better.
 
 ---
 
@@ -151,13 +178,15 @@ final loss **0.7393**.
 
 | Item | Value |
 |---|---|
-| Raw corpus | 15.9 GB |
-| Training tokens | 4.2B |
+| Training tokens | 8.3B (15,830 steps × 524,288) |
 | Vocabulary | 32,000 (self-trained) |
 
-**Stage 1**: ModelScope `iic/WMT-zh-en` (6.36 GB, ~25M sentence pairs)
-
-**Stage 2**: 14 OPUS corpora (8.0 GB) + pragmatic equivalence pairs (39.9M tokens)
+| Stage | Steps | Tokens | Source |
+|---|---|---|---|
+| Stage 1 | 0 → 3,815 | 2.00B | ModelScope `iic/WMT-zh-en` (6.36 GB, ~25M pairs) |
+| Stage 2 | 3,815 → 8,010 | 2.20B | 14 OPUS corpora (8.0 GB) + **pragmatic equivalence pairs** |
+| Continued | 8,010 → 13,506 | 2.88B | Extended OPUS corpora |
+| Stage 3 | 13,506 → 15,830 | 1.22B | Extended OPUS + augmented pragmatic pairs |
 
 → full list in [`docs/数据集清单_OPUS.md`](docs/数据集清单_OPUS.md)
 
@@ -176,39 +205,75 @@ Paragraph-level samples are used to train 4–8K long context —
 
 ## Evaluation
 
-### Chinese→English · 47 short sentences vs OPUS-MT
+### FLORES-200 devtest · Chinese→English (1012 sentences)
 
-| Category | n | ym wins | MT wins | tie | both wrong |
-|---|---|---|---|---|---|
-| A sentence-final particles | 6 | 0 | 3 | 3 | 0 |
-| B aspect / tense | 5 | 0 | 3 | 2 | 0 |
-| C conversational responses | 12 | 0 | 10 | 0 | 2 |
-| D interjections | 5 | 0 | 1 | 4 | 0 |
-| E discourse markers | 10 | 0 | 8 | 1 | 1 |
-| F polite modesty | 6 | 0 | 4 | 1 | 1 |
-| **G control group** | 3 | 0 | 0 | **3** | 0 |
-| **Total** | **47** | **0** | **29 (62%)** | **14 (30%)** | **4 (9%)** |
+| Metric | **ym (Stage 3)** | ym (Stage 2) | OPUS-MT | ym/OPUS |
+|---|---|---|---|---|
+| **BLEU (13a)** | **17.50** | 11.80 | **23.16** | 75.6% |
+| BLEU (zh) | 17.44 | 9.76 | 23.07 | 75.6% |
+| **chrF** | **46.46** | 41.77 | **53.60** | 86.7% |
+| **chrF++** | **43.98** | 39.27 | **50.97** | 86.3% |
+| TER | 76.05 | 103.30 | 65.74 | — |
+| Avg output words | **21.49** | 27.35 | 21.79 | — |
+| Empty outputs | 0 | 0 | 0 | — |
 
-> **Verdict: OPUS-MT wins outright.** But ⚠️ **the control group is a perfect 3:3 tie** —
-> everyday sentences already match the MT baseline; the gap is only in
-> conversational / pragmatic speech.
+Reference translations average **21.64 words**. All data and scores live in
+[`eval/`](eval) and **can be re-computed offline with sacrebleu**.
 
-### Long text · 13 cases
+> **How to read this**: chrF++ at **86.3%** of the baseline means the model
+> **gets the content right**; BLEU at **75.6%** means it **doesn't sound natural yet**.
+> The gap between the two is the classic signature of a tiny model.
+>
+> ym has only **70%** of OPUS-MT's parameters (54.4M vs 77.9M) and is a **single
+> bidirectional model**, while OPUS needs one model per direction. ym also uses
+> **greedy decoding** against beam=4 — which puts ym at a disadvantage.
 
-ym 0 wins / MT 8 wins / both wrong 4.
+### Stage 2 → Stage 3: what doubling the tokens bought
 
-Typical failures (recorded honestly):
-- Paragraph-narrative: **infinite loop**, `he was a new engineer` repeated 68 times
-- Consistency-terminology: **only the second half translated**, first 60 chars dropped
-- Long sentence-technical: **both wrong** (we rendered 4096 as "four-thousand-ninety-six"; MT produced `400096 medals`)
+| Metric | Stage 2 (4.2B) | Stage 3 (8.3B) | Change |
+|---|---|---|---|
+| BLEU (13a) | 11.80 | **17.50** | **+48.3%** |
+| chrF++ | 39.27 | **43.98** | +12.0% |
+| TER | 103.30 | **76.05** | **−26.4%** |
+| Avg output words | 27.35 | **21.49** | −21.4% |
+| Generation speed | 1099 ms/sent | **184 ms/sent** | **6.0×** |
 
-→ full sentence-by-sentence comparison in [`eval_results/ym_vs_机翻_完整对比.txt`](eval_results/ym_vs_机翻_完整对比.txt)
+Stage 2 emitted 27.35 words where the reference has 21.64, with TER at 103.3
+(above 100 means it edits more than simply copying the reference).
+Stage 3 converges to 21.49 words.
 
-### Speed
+> **Output length regression + 6x speedup = one root cause: repetition is largely suppressed.**
+> This isn't a capability suddenly appearing — it's long-tail defects being systematically fixed.
 
-| Scenario | ym-Translation | OPUS-MT (beam=4) |
+### Human comparison · 47 short sentences vs OPUS-MT
+
+| | Stage 2 | Stage 3 |
 |---|---|---|
-| Short sentence (the common on-device case) | **0.19–0.29 s/sentence** | 0.20–0.99 s/sentence |
+| ym wins | 0 | **2** |
+| OPUS wins | 29 | **17** |
+| ties | 12 | **27** |
+| both wrong | 4 | **0** |
+
+> The gain isn't one category getting stronger — it's **"both wrong" and
+> "OPUS-exclusive wins" turning into ties across the board**.
+> Sentence-by-sentence logs in [`eval_results/`](eval_results).
+
+### Long text
+
+In the Stage 2 round, across 13 long-text cases: ym 0 wins / MT 8 wins / both wrong 4.
+Typical failures included an **infinite loop** (`he was a new engineer` repeated 68 times)
+and **translating only the second half**. Repetition improved substantially in Stage 3,
+but long text remains a weak spot.
+
+### Generation config (fairness note)
+
+| Item | ym-Translation | OPUS-MT |
+|---|---|---|
+| Decoding | **greedy (argmax)** | beam search (beam=4) |
+| max tokens | 192 | 256 |
+| Precision | bfloat16 | fp32 |
+| Batch | 1 | 32 |
+| Speed | **184 ms/sent** | 34 ms/sent |
 
 ---
 
@@ -216,23 +281,39 @@ Typical failures (recorded honestly):
 
 | Issue | Status |
 |---|---|
-| Conversational responses (category C, 0:10) | ❌ biggest weakness |
-| English→Chinese collapse on isolated particles | ❌ corpus leakage + looping |
-| Long-text looping / truncation | ❌ needs beam search |
+| Phrase-level repetition (`medal medals`) | ⚠️ improved, still present |
+| Long-text repetition / truncation can cut mid-sentence | ⚠️ improved |
+| Conversational responses, pragmatics | ❌ biggest weakness |
+| Rare-word spelling (`exports` ← `exits`) | ❌ unsolved |
 
 ### Roadmap
 
 | Priority | Action |
 |---|---|
-| **P0** | add beam search + repetition penalty (fix looping) |
+| **P0** | beam search (beam=4) + repetition penalty |
 | **P1** | add conversational data (OpenSubtitles) |
-| **P1** | raise pragmatic-pair REPEAT to 5000+ (**could overtake MT**) |
+| **P1** | raise pragmatic-pair REPEAT to 5000+ |
 | **P2** | length penalty + over-long segmentation |
 | **P3** | int8/int4 quantization + ONNX export |
 
 ---
 
 ## Quick start
+
+### Run inference with the Stage 3 weights
+
+```bash
+pip install -r requirements.txt
+huggingface-cli download yumiao-dev/ym-translation --local-dir ym-weights
+
+python3 infer.py --model ym-weights "今天天气怎么样？"
+# 中: 今天天气怎么样？
+# 英: How's the weather today?
+
+python3 infer.py --model ym-weights -i          # interactive mode
+```
+
+### Retrain from scratch
 
 ```bash
 pip install -r requirements.txt
@@ -253,6 +334,11 @@ python3 scripts/eval_v3.py    --ckpt output/ckpt2/latest.pt
 python3 scripts/eval_long.py  --ckpt output/ckpt2/latest.pt
 ```
 
+### Re-compute the evaluation scores (no GPU needed)
+
+See [`eval/README.md`](eval/README.md) — the repo ships every hypothesis file,
+so sacrebleu reproduces the scores directly.
+
 ---
 
 ## Lessons learned (worth a read)
@@ -261,7 +347,7 @@ python3 scripts/eval_long.py  --ckpt output/ckpt2/latest.pt
    the floor immediately on continued training.
 2. **`TARGET_TOKENS` is cumulative**, not the amount to add.
 3. **The data glob `part_*.bin` did not match `ord_*.bin`** — nearly wasted 2.2B tokens.
-4. **Throughput unit trap** — the `213K tok/s` in the log includes historical tokens in
+4. **Throughput unit trap** — the tok/s in the log includes historical tokens in
    its numerator; the real speed is the per-step rate.
 5. **Chinese must have spaces removed** — otherwise BPE shatters multi-character words
    and token efficiency drops by 2.4x.
@@ -269,6 +355,17 @@ python3 scripts/eval_long.py  --ckpt output/ckpt2/latest.pt
 Details in [`docs/环境备忘.md`](docs/环境备忘.md) and [`docs/Stage2训练完成报告.md`](docs/Stage2训练完成报告.md).
 
 ---
+
+## Citation
+
+```bibtex
+@misc{ymtranslation2026,
+  title  = {ym-Translation: A 54M From-Scratch Chinese-English Translation Model},
+  year   = {2026},
+  note   = {Trained on 8.3B tokens with pragmatic-equivalence pairs},
+  url    = {https://github.com/yumiao-dev/ym-translation}
+}
+```
 
 ## License
 

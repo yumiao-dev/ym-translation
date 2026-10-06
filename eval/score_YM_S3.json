@@ -1,0 +1,13 @@
+{
+  "name": "YM_S3",
+  "n": 1012,
+  "hyp_file": "ym_hyp.txt",
+  "BLEU_13a": 17.5001,
+  "BLEU_zh": 17.4367,
+  "chrF": 46.4644,
+  "chrF++": 43.9785,
+  "TER": 76.0513,
+  "avg_hyp_words": 21.49,
+  "avg_ref_words": 21.64,
+  "empty_hyps": 0
+}

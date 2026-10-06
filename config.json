@@ -1,0 +1,32 @@
+{
+  "architectures": [
+    "YMTranslate"
+  ],
+  "model_type": "ym_translate",
+  "vocab_size": 32000,
+  "hidden_size": 512,
+  "num_hidden_layers": 10,
+  "num_attention_heads": 8,
+  "intermediate_size": 2048,
+  "max_position_embeddings": 4096,
+  "tie_word_embeddings": true,
+  "torch_dtype": "float32",
+  "num_parameters": 54406912,
+  "stage": "stage3",
+  "training": {
+    "step": 15830,
+    "tokens": 8299479040,
+    "tokens_human": "8.299B"
+  },
+  "language_pair": [
+    "zho_Hans",
+    "eng_Latn"
+  ],
+  "special_tokens": {
+    "bos": 2,
+    "eos": 3,
+    "zh": 4,
+    "en": 5
+  },
+  "prompt_format": "<|zh|> {source} <|en|>"
+}

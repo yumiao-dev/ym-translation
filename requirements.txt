@@ -3,7 +3,14 @@
 torch>=2.3.0
 numpy>=1.24.0
 
+# 推理（infer.py / modeling_ym.py）
+safetensors>=0.4.0
+tokenizers>=0.15.0
+
 # 评估用（机翻基线对照）
 transformers>=4.40.0
 sentencepiece>=0.1.99
 sacremoses>=0.1.0
+
+# 复算评测分数（见 eval/README.md）
+sacrebleu==2.6.0
