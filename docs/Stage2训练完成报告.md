@@ -1,7 +1,7 @@
 # ym-Translation Stage 2 训练完成报告
 
 **训练时间**：2026-10-05 07:15 → 12:43（约 5.5 小时）
-**实例**：`dsw-2230987-5c9f4b45fd-s7sf5`（DSW-AMD / AMD Instinct MI300A）
+**实例**：`dsw-2230987-5c9f4b45fd-s7sf5`（DSW-AMD / AMD Instinct MI300X）
 **结果**：`=== STAGE2 DONE: step 8010, 4.200B tokens ===`
 
 ---
