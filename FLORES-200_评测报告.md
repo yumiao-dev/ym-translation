@@ -3,7 +3,7 @@
 > **模型**：ym-Translation 0.1B (Stage 3) · 54.4M 参数 · 从零预训练 8.3B tokens
 > **基线**：Helsinki-NLP/opus-mt-zh-en · 77.9M 参数 · 成熟工业级机翻
 > **数据**：FLORES-200 devtest 中译英（`zho_Hans` → `eng_Latn`），**1012 句**
-> **评测卡**：AMD Instinct MI300A · `sacrebleu 2.6.0`
+> **评测卡**：AMD Instinct MI300X · `sacrebleu 2.6.0`
 
 ---
 
@@ -107,7 +107,7 @@ Stage 3 把输出收敛到 **21.49 词**（参考 21.64），TER 降到 76.05。
 
 - 每步 **4.699 秒**（global batch 524,288 tokens），**全程零抖动**
 - 由 checkpoint 写入时间戳与训练日志**双向验证**
-- 单卡 **AMD Instinct MI300A**（191.7 GB 显存，GPU 利用率 96–100%）
+- 单卡 **AMD Instinct MI300X**（191.7 GB 显存，GPU 利用率 96–100%）
 
 **折算**：20.7 小时 × 1 卡 = **约 21 GPU·小时**，训练出 54.4M 参数的翻译模型。
 
