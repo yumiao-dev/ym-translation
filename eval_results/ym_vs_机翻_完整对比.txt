@@ -33,7 +33,7 @@
   │ 解码方式      │ 贪心（argmax）              │ Beam search (num_beams=4)   │
   │              │                            │ + no_repeat_ngram_size=3    │
   │ 训练数据      │ 4.2B tokens 网页平行语料     │ OPUS 全量（含大量人工译文）   │
-  │ 运行环境      │ DSW-AMD (MI300A) GPU       │ DSW-AMD (MI300A) GPU        │
+  │ 运行环境      │ DSW-AMD (MI300X) GPU       │ DSW-AMD (MI300X) GPU        │
   └──────────────┴────────────────────────────┴────────────────────────────┘
 
 【免责声明】
@@ -711,5 +711,5 @@ D / F 类 · 感叹词与委婉语
   · ym 英译中评估：scripts/eval_en2zh.py     → output/ckpt2/latest.pt
   · ym 长文本评估：scripts/eval_long.py      → output/ckpt2/latest.pt
   · 机翻长文本   ：opusmt_zh_en（Helsinki-NLP/opus-mt-zh-en, 77.9M）
-  · 实例          ：dsw-2230987-5c9f4b45fd-s7sf5（DSW-AMD / MI300A）
+  · 实例          ：dsw-2230987-5c9f4b45fd-s7sf5（DSW-AMD / MI300X）
 ================================================================================
