@@ -4,14 +4,14 @@
 
 > A **54.4M-parameter** bidirectional Chinese↔English translation model, trained **from scratch**,
 > targeting **fully offline** inference on Android devices.
-> **Trained on a single AMD Instinct MI300A — 20 h 40 m of pure training, 8.3B tokens.**
+> **Trained on a single AMD Instinct MI300X — 20 h 40 m of pure training, 8.3B tokens.**
 
 [![params](https://img.shields.io/badge/params-54.4M-blue)]()
 [![tokens](https://img.shields.io/badge/trained-8.3B_tokens-green)]()
 [![bleu](https://img.shields.io/badge/FLORES--200_BLEU-17.50-orange)]()
 [![chrf](https://img.shields.io/badge/chrF%2B%2B-43.98-blueviolet)]()
 [![context](https://img.shields.io/badge/context-4K_(extrapolatable_8K)-orange)]()
-[![hardware](https://img.shields.io/badge/hardware-1%C3%97_AMD_MI300A-red)]()
+[![hardware](https://img.shields.io/badge/hardware-1%C3%97_AMD_MI300X-red)]()
 [![time](https://img.shields.io/badge/train-20h40m-purple)]()
 [![status](https://img.shields.io/badge/status-work_in_progress-yellow)]()
 [![hf](https://img.shields.io/badge/%F0%9F%A4%97_weights-Hugging_Face-yellow)](https://huggingface.co/yumiao-dev/ym-translation)
@@ -210,7 +210,7 @@ CTX       = 4096     # RoPE base=500000, extrapolates to 8K
 | Item | Spec |
 |---|---|
 | Platform | ModelScope Code Workspace (DSW-AMD) |
-| Accelerator | **AMD Instinct MI300A** (APU unified memory) |
+| Accelerator | **AMD Instinct MI300X** |
 | Memory | 191.7 GB |
 | GPU utilization | 96–100% (saturated the whole time) |
 
@@ -446,4 +446,4 @@ Apache-2.0
 
 - Corpora: [OPUS](https://object.pouta.csc.fi), ModelScope `iic/WMT-zh-en`
 - Baseline: [Helsinki-NLP/opus-mt-zh-en](https://huggingface.co/Helsinki-NLP/opus-mt-zh-en)
-- Platform: ModelScope Code Workspace / AMD Instinct MI300A
+- Platform: ModelScope Code Workspace / AMD Instinct MI300X
